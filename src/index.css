@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html, body { -webkit-tap-highlight-color: transparent; }
+body { font-family: Nunito, system-ui, sans-serif; color: #1E293B; }
+.mk { font-family: "Noto Sans", Nunito, system-ui, sans-serif; font-feature-settings: "kern"; }
+.flip { perspective: 1200px; }
+.flip-inner { transition: transform .55s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
+.flip-inner.is-flipped { transform: rotateY(180deg); }
+.face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.face-back { transform: rotateY(180deg); }
+.press { transition: transform .08s ease, box-shadow .08s ease; }
+.press:active { transform: translateY(3px); box-shadow: 0 1px 0 0 rgba(15,46,34,.25) !important; }
+.pattern { background-image: radial-gradient(rgba(28,82,60,.07) 1.2px, transparent 1.2px); background-size: 18px 18px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

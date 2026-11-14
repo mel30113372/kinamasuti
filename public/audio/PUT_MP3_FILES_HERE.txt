@@ -1,0 +1,2 @@
+Put your .mp3 recordings in this folder (e.g. kwe.mp3).
+Then in src/languageData.js set:  audioUrl: "audio/kwe.mp3",
