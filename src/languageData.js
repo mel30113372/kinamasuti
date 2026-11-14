@@ -13,6 +13,8 @@
      category    Which deck it belongs to: "greetings", "animals", "nature",
                  "family" — or "vowel" / "consonant" for alphabet letters.
      verifiedBy  Optional note on who supplied or checked the word. Can stay "".
+     keywords    (optional) other English words people might type to find it,
+                 e.g. keywords: ['hi', 'hey'] for Kwe'.
 
    Rules: keep the quotes "…" and the comma after each line and each block.
    Orthography: Francis-Smith (Nova Scotia standard). An apostrophe after a
@@ -38,6 +40,7 @@ export const languageData = {
     { id: 'animals', title: 'Animals', icon: 'animal', color: 'forest', blurb: 'Creatures of the forest and sea.' },
     { id: 'nature', title: 'Nature & Water', icon: 'water', color: 'forest', blurb: "Water, sky and land of Mi'kma'ki." },
     { id: 'family', title: 'Family', icon: 'family', color: 'clay', blurb: 'The people closest to you.' },
+    { id: 'numbers', title: 'Numbers', icon: 'numbers', color: 'forest', blurb: 'Count from one to ten.' },
   ],
 
   // ---------------------------------------------------------------------------
@@ -69,14 +72,14 @@ export const languageData = {
   // ---------------------------------------------------------------------------
   words: [
     // ----- Greetings -----
-    { id: 'greetings-hello', mikmaw: "Kwe'", english: 'Hello', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-thank-you', mikmaw: "Wela'lin", english: 'Thank you (to one person)', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-see-you', mikmaw: 'Nmultes', english: 'See you later', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-how-are-you', mikmaw: "Me' tal-wuleyn?", english: 'How are you?', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
+    { id: 'greetings-hello', mikmaw: "Kwe'", english: 'Hello', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['hi', 'hey', 'greetings'] },
+    { id: 'greetings-thank-you', mikmaw: "Wela'lin", english: 'Thank you (to one person)', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['thanks', 'thank u'] },
+    { id: 'greetings-see-you', mikmaw: 'Nmultes', english: 'See you later', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['bye', 'goodbye', 'see ya', 'later'] },
+    { id: 'greetings-how-are-you', mikmaw: "Me' tal-wuleyn?", english: 'How are you?', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['how are u', 'how r u'] },
     { id: 'greetings-welcome', mikmaw: "Pjila'si", english: 'Welcome', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-thank-you-all', mikmaw: "Wela'lioq", english: 'Thank you (to many people)', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-yes', mikmaw: "E'e", english: 'Yes', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
-    { id: 'greetings-no', mikmaw: "Moqwa'", english: 'No', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '' },
+    { id: 'greetings-thank-you-all', mikmaw: "Wela'lioq", english: 'Thank you (to many people)', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['thanks everyone', 'thank you all'] },
+    { id: 'greetings-yes', mikmaw: "E'e", english: 'Yes', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['yeah', 'yep'] },
+    { id: 'greetings-no', mikmaw: "Moqwa'", english: 'No', phoneticHint: '', audioUrl: '', category: 'greetings', verifiedBy: '', keywords: ['nope'] },
 
     // ----- Animals -----
     { id: 'animals-bear', mikmaw: "Mu'in", english: 'Bear', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
@@ -85,7 +88,7 @@ export const languageData = {
     { id: 'animals-rabbit', mikmaw: "Apli'kmuj", english: 'Rabbit / hare', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
     { id: 'animals-fox', mikmaw: 'Wowkwis', english: 'Fox', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
     { id: 'animals-beaver', mikmaw: 'Kopit', english: 'Beaver', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
-    { id: 'animals-dog', mikmaw: "L'mu'j", english: 'Dog', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
+    { id: 'animals-dog', mikmaw: "L'mu'j", english: 'Dog', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '', keywords: ['puppy'] },
     { id: 'animals-lobster', mikmaw: 'Jakej', english: 'Lobster', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
     { id: 'animals-salmon', mikmaw: 'Plamu', english: 'Salmon', phoneticHint: '', audioUrl: '', category: 'animals', verifiedBy: '' },
 
@@ -93,7 +96,7 @@ export const languageData = {
     { id: 'nature-water', mikmaw: 'Samqwan', english: 'Water', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
     { id: 'nature-river', mikmaw: 'Sipu', english: 'River', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
     { id: 'nature-lake', mikmaw: 'Qospem', english: 'Lake', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
-    { id: 'nature-sun', mikmaw: "Na'ku'set", english: 'Sun', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
+    { id: 'nature-sun', mikmaw: "Na'ku'set", english: 'Sun', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '', keywords: ['sunshine'] },
     { id: 'nature-star', mikmaw: 'Kloqowej', english: 'Star', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
     { id: 'nature-moon', mikmaw: 'Tepknuset', english: 'Moon', phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
     { id: 'nature-homeland', mikmaw: "Mi'kma'ki", english: "The Mi'kmaw homeland", phoneticHint: '', audioUrl: '', category: 'nature', verifiedBy: '' },
@@ -101,10 +104,22 @@ export const languageData = {
     // ----- Family -----
     { id: 'family-woman', mikmaw: "E'pit", english: 'Woman', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
     { id: 'family-man', mikmaw: "Ji'nm", english: 'Man', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
-    { id: 'family-child', mikmaw: "Mijua'ji'j", english: 'Child', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
-    { id: 'family-my-mother', mikmaw: 'Nkij', english: 'My mother', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
-    { id: 'family-my-father', mikmaw: 'Nujj', english: 'My father', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
+    { id: 'family-child', mikmaw: "Mijua'ji'j", english: 'Child', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '', keywords: ['kid', 'baby'] },
+    { id: 'family-my-mother', mikmaw: 'Nkij', english: 'My mother', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '', keywords: ['mom', 'mum', 'mother', 'mama'] },
+    { id: 'family-my-father', mikmaw: 'Nujj', english: 'My father', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '', keywords: ['dad', 'father', 'papa'] },
     { id: 'family-all-relations', mikmaw: "Msit no'kmaq", english: 'All my relations', phoneticHint: '', audioUrl: '', category: 'family', verifiedBy: '' },
+
+    // ----- Numbers -----
+    { id: 'numbers-one', mikmaw: "Ne'wt", english: 'One', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['1'] },
+    { id: 'numbers-two', mikmaw: "Ta'pu", english: 'Two', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['2'] },
+    { id: 'numbers-three', mikmaw: "Si'st", english: 'Three', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['3'] },
+    { id: 'numbers-four', mikmaw: "Ne'w", english: 'Four', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['4'] },
+    { id: 'numbers-five', mikmaw: "Na'n", english: 'Five', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['5'] },
+    { id: 'numbers-six', mikmaw: "Asukom", english: 'Six', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['6'] },
+    { id: 'numbers-seven', mikmaw: "L'uiknek", english: 'Seven', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['7'] },
+    { id: 'numbers-eight', mikmaw: "Ukmuljin", english: 'Eight', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['8'] },
+    { id: 'numbers-nine', mikmaw: "Pesqunatek", english: 'Nine', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['9'] },
+    { id: 'numbers-ten', mikmaw: "Newtiska'q", english: 'Ten', phoneticHint: '', audioUrl: '', category: 'numbers', verifiedBy: '', keywords: ['10'] },
 
     // ----- Culture (alphabet examples) -----
     { id: 'culture-mikmaw', mikmaw: "Mi'kmaw", english: "Mi'kmaw (the language)", phoneticHint: '', audioUrl: '', category: 'culture', verifiedBy: '' },
@@ -143,6 +158,7 @@ export const languageData = {
       { wordId: 'family-all-relations', ask: 'meaning' },
       { wordId: 'family-man', ask: 'say' },
     ],
+    numbers: [], // empty = quiz every word in the deck
   },
 
   // ---------------------------------------------------------------------------
@@ -169,6 +185,8 @@ export const languageData = {
     { id: 'l7', title: 'Nature Quiz', deck: 'nature', mode: 'quiz' },
     { id: 'l8', title: 'My Family', deck: 'family', mode: 'flashcards' },
     { id: 'l9', title: 'Family Quiz', deck: 'family', mode: 'quiz' },
+    { id: 'l10', title: 'Count to Ten', deck: 'numbers', mode: 'flashcards' },
+    { id: 'l11', title: 'Numbers Quiz', deck: 'numbers', mode: 'quiz' },
   ],
 
 };

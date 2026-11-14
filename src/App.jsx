@@ -3,10 +3,11 @@ import {
   Home, Type, Gamepad2, Users, Flame, Star, Zap, Volume2, X, ChevronLeft, ChevronRight,
   Check, RotateCcw, Lock, Play, Layers, ListChecks, Puzzle, Trophy, Feather, Leaf,
   Droplets, Heart, MessageCircle, PawPrint, Sparkles, Mic, BookOpen, ExternalLink, AlertTriangle,
-  Settings, VolumeX, ChevronDown, ClipboardCheck,
+  Settings, VolumeX, ChevronDown, ClipboardCheck, Languages, ArrowLeftRight, Hash, Search,
 } from 'lucide-react';
 
 import { languageData } from './languageData.js';
+import { pronounce } from './pronounce.js';
 
 /* Content lives in ./languageData.js — edit words, audio links and lessons there. */
 const wordsById = Object.fromEntries(languageData.words.map((w) => [w.id, w]));
@@ -185,7 +186,7 @@ function ProgressBar({ value, className = '' }) {
 
 const deckIcon = (k, cls = 'w-6 h-6') => ({
   greet: <MessageCircle className={cls} />, animal: <PawPrint className={cls} />,
-  water: <Droplets className={cls} />, family: <Heart className={cls} />,
+  water: <Droplets className={cls} />, family: <Heart className={cls} />, numbers: <Hash className={cls} />,
 }[k] || <Leaf className={cls} />);
 const modeIcon = (m, cls = 'w-6 h-6') => ({ flashcards: <Layers className={cls} />, quiz: <ListChecks className={cls} />, phrase: <Puzzle className={cls} /> }[m]);
 const modeName = { flashcards: 'Flashcards', quiz: 'Quiz', phrase: 'Build the Phrase' };
@@ -453,7 +454,7 @@ function LetterModal({ item, onClose }) {
             <div className="min-w-0">
               <p className="mk text-3xl font-extrabold text-forest-700 break-words">{ex.mikmaw}</p>
               <p className="text-slate-600 font-bold">{ex.english}</p>
-              {ex.phoneticHint && <p className="text-sm text-slate-500">{ex.phoneticHint}</p>}
+              <p className="text-sm text-slate-500">Say it like: <b className="text-clay-600">{ex.phoneticHint || pronounce(ex.mikmaw)}</b></p>
             </div>
             <ListenButton text={ex.mikmaw} audioUrl={ex.audioUrl} compact variant="light" />
           </div>
@@ -563,7 +564,7 @@ function Flashcards({ deckKey, onExit, onFinish }) {
           <div className="face absolute inset-0 rounded-[2rem] bg-white border-2 border-b-[8px] border-sand-200 flex flex-col items-center justify-center p-6 text-center">
             <span className="absolute top-4 left-4 text-xs font-black uppercase text-slate-400">Mi'kmaw</span>
             <p className="mk text-4xl min-[400px]:text-5xl font-extrabold text-forest-700 break-words max-w-full">{card.mikmaw}</p>
-            {card.phoneticHint && <p className="mt-2 text-slate-500 font-bold">{card.phoneticHint}</p>}
+            <p className="mt-2 text-slate-500 font-bold">Say it like: <span className="text-clay-600">{card.phoneticHint || pronounce(card.mikmaw)}</span></p>
             <div className="mt-6"><ListenButton text={card.mikmaw} audioUrl={card.audioUrl} /></div>
             <p className="absolute bottom-4 text-xs font-bold text-slate-400 flex items-center gap-1"><RotateCcw className="w-3.5 h-3.5" /> Tap card to flip</p>
           </div>
@@ -743,6 +744,207 @@ function BuildPhrase({ onExit, onFinish, name }) {
 }
 
 /* =============================================================================
+   TRANSLATE — English ⇄ Mi'kmaw lookup over the app's word list
+   ============================================================================= */
+const STOP = new Set(['a', 'an', 'the', 'is', 'are', 'to', 'of', 'and', 'i', 'am', 'it', 'in', 'on', 'please', 'what', 'say']);
+const normEn = (t) => t.toLowerCase().replace(/[’‘`]/g, "'").replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9' ]/g, ' ').replace(/\s+/g, ' ').trim();
+const normMk = (t) => t.toLowerCase().replace(/[’‘`'ɨ\-]/g, '').replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
+function lev(a, b) {
+  if (Math.abs(a.length - b.length) > 3) return 99;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function scoreTerm(q, term) {
+  if (!q || !term) return 0;
+  if (q === term) return 100;
+  if (q.length >= 2 && term.startsWith(q)) return 85;
+  if (q.length >= 3 && term.includes(q)) return 65;
+  if (term.length >= 3 && new RegExp(`(^| )${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( |$)`).test(q)) return 70;
+  const dist = lev(q, term); const allow = term.length >= 7 ? 3 : term.length >= 4 ? 2 : 1;
+  return dist <= allow ? 50 - dist * 8 : 0;
+}
+const enTerms = (w) => [w.english, ...w.english.split(/[\/,]/), ...(w.keywords || [])].map(normEn).filter(Boolean);
+const dictionary = languageData.words;
+function lookup(query, dir) {
+  const q = dir === 'en' ? normEn(query) : normMk(query);
+  if (!q) return [];
+  return dictionary
+    .map((w) => ({ w, score: Math.max(...(dir === 'en' ? enTerms(w) : [normMk(w.mikmaw)]).map((t) => scoreTerm(q, t))) }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.w.mikmaw.length - b.w.mikmaw.length);
+}
+
+function useSpeechInput(onText) {
+  const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const [listening, setListening] = useState(false);
+  const [error, setError] = useState('');
+  const recRef = useRef(null);
+  const start = () => {
+    setError('');
+    if (!SR) { setError('Voice input isn’t supported in this browser. Try Chrome, or type instead.'); return; }
+    try {
+      stopAll();
+      const r = new SR(); recRef.current = r;
+      r.lang = 'en-CA'; r.interimResults = true; r.maxAlternatives = 1;
+      r.onresult = (e) => onText(Array.from(e.results).map((x) => x[0].transcript).join(''));
+      r.onerror = (e) => setError(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Microphone access is blocked. Allow it in your browser settings, or type instead.' : e.error === 'no-speech' ? 'Didn’t hear anything — tap the mic and try again.' : 'Couldn’t use the microphone here. Type instead.');
+      r.onend = () => setListening(false);
+      r.start(); setListening(true);
+    } catch { setListening(false); setError('Couldn’t use the microphone here. Type instead.'); }
+  };
+  const stop = () => { try { recRef.current && recRef.current.stop(); } catch {} setListening(false); };
+  useEffect(() => () => stop(), []);
+  return { supported: !!SR, listening, error, start, stop };
+}
+
+function ResultCard({ w, dir }) {
+  const deck = deckById[w.category];
+  const say = w.phoneticHint || pronounce(w.mikmaw);
+  return (
+    <div className="rounded-[2rem] bg-white border-2 border-b-[6px] border-sand-200 p-5 animate-pop">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-black uppercase text-slate-400">{dir === 'en' ? "In Mi'kmaw" : 'In English'}</span>
+        {deck && <span className="inline-flex items-center gap-1 rounded-full bg-forest-50 text-forest-700 text-xs font-bold px-2 py-1">{deckIcon(deck.icon, 'w-3.5 h-3.5')} {deck.title}</span>}
+      </div>
+      {dir === 'en' ? (
+        <p className="mk text-4xl min-[400px]:text-5xl font-extrabold text-forest-700 mt-2 break-words">{w.mikmaw}</p>
+      ) : (
+        <p className="text-4xl font-black mt-2 break-words">{w.english}</p>
+      )}
+      <div className="mt-4 rounded-2xl bg-clay-50 border-2 border-clay-100 p-4">
+        <p className="text-xs font-black uppercase text-clay-700 flex items-center gap-1"><Mic className="w-3.5 h-3.5" /> Say it like</p>
+        <p className="text-2xl font-black text-clay-600 mt-1 break-words tracking-wide">{say}</p>
+        <p className="text-xs text-slate-500 mt-1">CAPITAL letters = hold that sound a little longer.</p>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+        <p className="min-w-0 font-bold text-slate-600">{dir === 'en' ? w.english : <span className="mk text-xl text-forest-700 font-extrabold">{w.mikmaw}</span>}</p>
+        <ListenButton text={w.mikmaw} audioUrl={w.audioUrl} />
+      </div>
+    </div>
+  );
+}
+
+function TranslateView() {
+  const [dir, setDir] = useState('en'); // 'en' = English → Mi'kmaw, 'mk' = Mi'kmaw → English
+  const [q, setQ] = useState('');
+  const inputRef = useRef(null);
+  const mic = useSpeechInput((t) => setQ(t));
+  const results = useMemo(() => lookup(q, dir), [q, dir]);
+  const best = results[0];
+  const strong = best && best.score >= 65;
+  const tokens = (dir === 'en' ? normEn(q) : normMk(q)).split(' ').filter((t) => t && !(dir === 'en' && STOP.has(t)));
+  const perWord = useMemo(() => {
+    if (strong || tokens.length < 2) return [];
+    return tokens.map((t) => ({ t, hit: lookup(t, dir).find((r) => r.score >= 65) })).filter((x) => x.hit);
+  }, [q, dir, strong]);
+  const insert = (ch) => {
+    const el = inputRef.current; if (!el) { setQ((v) => v + ch); return; }
+    const a = el.selectionStart ?? q.length, b = el.selectionEnd ?? q.length;
+    const v = q.slice(0, a) + ch + q.slice(b); setQ(v);
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(a + ch.length, a + ch.length); });
+  };
+  const swap = () => { mic.stop(); setDir((d) => (d === 'en' ? 'mk' : 'en')); setQ(''); };
+  const examples = dir === 'en' ? ['hello', 'thank you', 'bear', 'water', 'my mother', 'five'] : ["Kwe'", 'Wela\'lin', "Mu'in", 'Samqwan', 'Kitpu', "Na'n"];
+
+  return (
+    <div className="space-y-5 max-w-2xl mx-auto">
+      <header>
+        <h1 className="text-2xl sm:text-3xl font-black">Translate</h1>
+        <p className="text-slate-600 mt-1">Type{mic.supported && dir === 'en' ? ' or say' : ''} a word and see it in {dir === 'en' ? "Mi'kmaw" : 'English'} — with how to say it.</p>
+      </header>
+
+      {/* Direction switch */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-3xl bg-white border-2 border-sand-200 p-2">
+        <span className={cx('min-h-[48px] rounded-2xl flex items-center justify-center font-black text-center px-2', dir === 'en' ? 'bg-forest-600 text-white' : 'text-slate-500')}>{dir === 'en' ? 'English' : "Mi'kmaw"}</span>
+        <button onClick={swap} aria-label="Swap languages" className="w-12 h-12 rounded-full bg-clay-500 text-white border-b-4 border-clay-700 flex items-center justify-center active:translate-y-0.5 active:border-b-2 transition-all">
+          <ArrowLeftRight className="w-5 h-5" />
+        </button>
+        <span className={cx('min-h-[48px] rounded-2xl flex items-center justify-center font-black text-center px-2 mk', 'text-slate-500')}>{dir === 'en' ? "Mi'kmaw" : 'English'}</span>
+      </div>
+
+      {/* Input */}
+      <div className={cx('rounded-3xl bg-white border-2 p-3 transition-colors', mic.listening ? 'border-berry' : 'border-sand-300 focus-within:border-forest-500')}>
+        <div className="flex items-center gap-2">
+          <Search className="w-5 h-5 text-slate-400 shrink-0 ml-1" />
+          <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} enterKeyHint="search" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+            placeholder={dir === 'en' ? 'Type an English word…' : "Type a Mi'kmaw word…"} aria-label="Word to translate"
+            className={cx('flex-1 min-w-0 min-h-[52px] bg-transparent text-xl font-bold focus:outline-none', dir === 'mk' && 'mk')} />
+          {q && <button onClick={() => setQ('')} aria-label="Clear" className="w-11 h-11 rounded-full hover:bg-sand-100 flex items-center justify-center shrink-0"><X className="w-5 h-5 text-slate-500" /></button>}
+          {dir === 'en' && mic.supported && (
+            <button onClick={mic.listening ? mic.stop : mic.start} aria-label={mic.listening ? 'Stop listening' : 'Speak English'}
+              className={cx('w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-white border-b-4 transition-all active:translate-y-0.5 active:border-b-2',
+                mic.listening ? 'bg-berry border-[#7d2427]' : 'bg-forest-500 border-forest-800')}>
+              {mic.listening ? <SoundWave /> : <Mic className="w-5 h-5" />}
+            </button>
+          )}
+        </div>
+        {dir === 'mk' && (
+          <div className="flex gap-2 mt-2 pt-2 border-t-2 border-sand-100">
+            <span className="text-xs font-bold text-slate-500 self-center mr-1">Special letters:</span>
+            {["'", 'ɨ'].map((ch) => (
+              <button key={ch} onClick={() => insert(ch)} className="mk min-w-[48px] min-h-[44px] rounded-xl bg-sand-100 border-b-[3px] border-sand-300 text-xl font-extrabold active:translate-y-0.5 active:border-b">{ch}</button>
+            ))}
+          </div>
+        )}
+        {mic.listening && <p className="text-sm font-bold text-berry mt-2 ml-1">Listening… say a word in English</p>}
+        {mic.error && <p className="text-sm font-bold text-berry mt-2 ml-1">{mic.error}</p>}
+      </div>
+
+      {/* Results */}
+      {!q && (
+        <div>
+          <p className="text-sm font-black text-slate-500 mb-2">Try one:</p>
+          <div className="flex flex-wrap gap-2">
+            {examples.map((e) => (
+              <button key={e} onClick={() => setQ(e)} className={cx('min-h-[44px] px-4 rounded-full bg-white border-2 border-b-4 border-sand-200 font-extrabold hover:border-forest-300 active:translate-y-0.5 active:border-b-2 transition-all', dir === 'mk' && 'mk')}>{e}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {q && strong && <ResultCard key={best.w.id + dir} w={best.w} dir={dir} />}
+
+      {q && perWord.length > 0 && (
+        <section>
+          <p className="text-sm font-black text-slate-500 mb-2">Word by word</p>
+          <div className="space-y-3">{perWord.map(({ t, hit }) => <ResultCard key={t + hit.w.id} w={hit.w} dir={dir} />)}</div>
+        </section>
+      )}
+
+      {q && results.length > (strong ? 1 : 0) && (
+        <section>
+          <p className="text-sm font-black text-slate-500 mb-2">{strong ? 'Other matches' : 'Did you mean…'}</p>
+          <div className="rounded-3xl bg-white border-2 border-sand-200 divide-y-2 divide-sand-100 overflow-hidden">
+            {results.slice(strong ? 1 : 0, strong ? 5 : 6).map(({ w }) => (
+              <div key={w.id} className="flex items-center gap-3 px-4 py-2 min-h-[64px]">
+                <button onClick={() => setQ(dir === 'en' ? w.english.replace(/\s*\(.*\)/, '') : w.mikmaw)} className="flex-1 min-w-0 text-left">
+                  <span className="mk block font-extrabold text-forest-700 truncate">{w.mikmaw}</span>
+                  <span className="block text-sm text-slate-500 truncate">{w.english} · <span className="text-clay-600 font-bold">{w.phoneticHint || pronounce(w.mikmaw)}</span></span>
+                </button>
+                <ListenButton text={w.mikmaw} audioUrl={w.audioUrl} compact variant="light" showBadge={false} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {q && !strong && perWord.length === 0 && results.length === 0 && (
+        <div className="rounded-3xl bg-sand-100 p-5 text-center">
+          <Languages className="w-10 h-10 mx-auto text-forest-600" />
+          <p className="font-black mt-2">That word isn’t in our word list yet</p>
+          <p className="text-sm text-slate-600 mt-1">Try a simpler word, or check the spelling.</p>
+        </div>
+      )}
+
+      <p className="text-xs text-slate-500 text-center">Translate looks up the {dictionary.length} words and phrases in this app. Mi'kmaw grammar works differently from English, so it can’t build brand-new sentences.</p>
+    </div>
+  );
+}
+
+/* =============================================================================
    COMMUNITY & CULTURAL RESPECT
    ============================================================================= */
 function CommunityView() {
@@ -907,6 +1109,7 @@ const TABS = [
   { id: 'home', label: 'Learn', icon: Home },
   { id: 'alphabet', label: 'Alphabet', icon: Type },
   { id: 'practice', label: 'Practice', icon: Gamepad2 },
+  { id: 'translate', label: 'Translate', icon: Languages },
   { id: 'community', label: 'Community', icon: Users },
 ];
 const tabFromHash = () => { const h = (location.hash || '').slice(1); return TABS.some((t) => t.id === h) ? h : 'home'; };
@@ -960,10 +1163,10 @@ export default function App() {
           </button>
           <nav className="flex gap-1 ml-auto">
             {TABS.map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => setTab(id)}
-                className={cx('min-h-[48px] px-4 rounded-2xl font-extrabold flex items-center gap-2 transition-all border-2',
+              <button key={id} onClick={() => setTab(id)} aria-label={label} title={label}
+                className={cx('min-h-[48px] px-3 lg:px-4 rounded-2xl font-extrabold flex items-center gap-2 transition-all border-2',
                   tab === id ? 'bg-forest-50 text-forest-700 border-forest-300' : 'text-slate-500 border-transparent hover:bg-sand-100')}>
-                <Icon className="w-5 h-5" /> {label}
+                <Icon className="w-5 h-5" /> <span className="hidden lg:inline">{label}</span>
               </button>
             ))}
           </nav>
@@ -996,6 +1199,7 @@ export default function App() {
         {tab === 'home' && <HomeView progress={progress} onStartLesson={startLesson} />}
         {tab === 'alphabet' && <AlphabetView />}
         {tab === 'practice' && <PracticeView session={session} setSession={setSession} onFinish={finish} progress={progress} />}
+        {tab === 'translate' && <TranslateView />}
         {tab === 'community' && <CommunityView />}
         {!inGame && <Footer onReset={reset} />}
       </main>
@@ -1003,7 +1207,7 @@ export default function App() {
       {/* Mobile bottom tab bar */}
       {!inGame && (
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t-2 border-sand-200" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="grid grid-cols-4">
+          <div className="grid grid-cols-5">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setTab(id)} className="min-h-[64px] flex flex-col items-center justify-center gap-1" aria-current={tab === id ? 'page' : undefined}>
                 <span className={cx('w-14 h-8 rounded-full flex items-center justify-center transition-all', tab === id ? 'bg-forest-100 text-forest-700 scale-105' : 'text-slate-400')}><Icon className="w-6 h-6" /></span>

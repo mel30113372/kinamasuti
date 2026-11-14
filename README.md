@@ -1,6 +1,6 @@
 # Kina'masuti — Learn Mi'kmaw
 
-A game-based web app that helps youth (ages 8–16) practise Mi'kmaw: alphabet soundboard, flashcards, quizzes and a phrase-building game. Built with React, Tailwind CSS and Lucide icons.
+A game-based web app that helps youth (ages 8–16) practise Mi'kmaw: alphabet soundboard, flashcards, quizzes, a phrase-building game, and an English ⇄ Mi'kmaw word translator with pronunciation guides. Built with React, Tailwind CSS and Lucide icons.
 
 All words, audio links and lessons live in **one file: `src/languageData.js`**.
 

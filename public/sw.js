@@ -1,6 +1,6 @@
 /* Offline support for Kina'masuti. Bump VERSION after publishing new content
    so phones pick up the update. */
-const VERSION = 'kinamasuti-v1';
+const VERSION = 'kinamasuti-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
